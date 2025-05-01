@@ -38,11 +38,11 @@ void hex_32(const string& hex_string, uint64_t digits[], int& count){
     }
 }
 
-void long_add(uint64_t A[], uint64_t B[], uint64_t C[], int& carry){
+void long_add(uint64_t A[], uint64_t B[], uint64_t C[], int& carry, int count){
     carry=0;   
     uint64_t temp; 
     
-    for(int i=0;i<=32-1;i++){
+    for(int i=0;i<=count-1;i++){
         temp=A[i]+B[i]+carry;
         //cout<<"A[i] "<<A[i]<<endl;
         //cout<<"B[i] "<<B[i]<<endl;
@@ -84,7 +84,7 @@ int main(){
 
     int carry;
     uint64_t C[64];
-    long_add(A, B, C, carry);
+    long_add(A, B, C, carry, count_a);
 
     //cout<<"carry "<<carry<<endl;
     //треба придумати як передбачати розмір масиву
