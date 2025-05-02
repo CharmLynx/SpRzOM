@@ -80,14 +80,25 @@ void long_sub(uint64_t A[], uint64_t B[], uint32_t D[],int count){
     }
 
 }
+void long_mul_one(uint64_t A[], uint64_t E[], int&carry, int count, int e){
+    uint64_t temp;    
+    for(int i=0; i<=count-1;i++){
+        cout<<"A[i] "<<A[i]<<endl;
+        temp=A[i]*e+carry;
+        E[i]=temp&(4294967296-1);
+        carry = temp >> 32;
+        cout<<"-----------"<<endl;
+
+    }
+}
 
 
 int main(){
     
-    string a = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
-    string b = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
-    //string a = "123456789abcdef9";
-    //string b = "abcdef9012345678";
+    //string a = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
+    //string b = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
+    string a = "123456789abcdef9";
+    string b = "abcdef9012345678";
     //string a = "abcdef90";
     //string b = "12345678";
     int negative=0;
@@ -138,8 +149,20 @@ int main(){
         cout <<setfill('0') << setw(8)<< hex << D[j]<<"";
     }
     cout<<endl;
+    cout<<endl;
 
+    //множення багаторозрядного на цифру 
+    int e= 9;
+    int carry_m=0;
+    
+    uint64_t E[64];
+    
+    long_mul_one(A, E, carry_m, count_a, e);
 
+    if(carry_m!=0) cout<<carry_m;
+    for (int j = count_a-1; j >=0; j--){
+        cout <<setfill('0') << setw(8)<< hex << E[j]<<"";
+    }
     
     
     return 0;
