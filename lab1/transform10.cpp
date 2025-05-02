@@ -2,6 +2,7 @@
 #include <cmath>
 #include <string>
 #include <cstdint>
+#include <iomanip>
 
 using namespace std;
 
@@ -56,14 +57,44 @@ void long_add(uint64_t A[], uint64_t B[], uint64_t C[], int& carry, int count){
         
     }
 }
+void long_sub(uint64_t A[], uint64_t B[], uint32_t D[],int count){
+    int borrow=0;
+    int32_t temp;
+    for(int i=0; i<=count-1; i++){
+        //cout<<"A[i] "<<A[i]<<endl;
+        //cout<<"B[i] "<<B[i]<<endl;
+        
+        if(A[i]<=B[i]){
+            D[i]=(4294967296)+A[i]-B[i]-borrow;
+            borrow=1;
+            //cout<<"мав бути -"<<endl;
+        }
+        else{
+            D[i]=A[i]-B[i]-borrow;
+            borrow=0;
+            //cout<<"все норм"<<endl;
+        }
+        //cout<<"borrow "<<borrow<<endl;
+        //cout<<"D[i] "<<D[i]<<endl;
+        //cout<<"---------------------"<<endl;
+    }
+
+}
 
 
 int main(){
     
-    string b = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
-    string a = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
+    string a = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
+    string b = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
     //string a = "123456789abcdef9";
     //string b = "abcdef9012345678";
+    //string a = "abcdef90";
+    //string b = "12345678";
+    int negative=0;
+    if(a<b){
+        swap(a,b);
+        negative=1;
+    }
 
     uint64_t A[64];
     int count_a=0;
@@ -94,7 +125,22 @@ int main(){
         cout << hex << C[j]<<"";
     }
     
+    cout<<endl;
+   
 
+    
+
+    uint32_t D[32];
+    long_sub(A, B, D, count_a);
+    cout<<"sub ";
+    if(negative=1) cout<<"-";
+    for (int j = count_a-1; j >=0; j--){
+        cout <<setfill('0') << setw(8)<< hex << D[j]<<"";
+    }
+    cout<<endl;
+
+
+    
     
     return 0;
 } 
