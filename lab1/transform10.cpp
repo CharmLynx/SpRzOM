@@ -42,7 +42,7 @@ void hex_32(const string& hex_string, uint64_t digits[], int& count){
 void long_add(uint64_t A[], uint64_t B[], uint64_t C[], int& carry, int count){
     carry=0;   
     uint64_t temp; 
-    
+    int k=0;
     for(int i=0;i<=count-1;i++){
         temp=A[i]+B[i]+carry;
         //cout<<"A[i] "<<A[i]<<endl;
@@ -54,8 +54,9 @@ void long_add(uint64_t A[], uint64_t B[], uint64_t C[], int& carry, int count){
         carry=temp >> 32;
         //cout<<"перенос "<<carry<<endl;
         //cout<<"-----------------"<<endl;
-        
+        k++;
     }
+    if(carry!=0)C[k]=carry;
 }
 void long_sub(uint64_t A[], uint64_t B[], uint32_t D[],int count){
     int borrow=0;
@@ -80,37 +81,58 @@ void long_sub(uint64_t A[], uint64_t B[], uint32_t D[],int count){
     }
 
 }
-void long_mul_one(uint64_t A[], uint64_t E[], int&carry, int count, int e){
-    uint64_t temp;    
+void long_mul_one(uint64_t A[], uint64_t E[], uint64_t& carry, int count, uint64_t e){
+    uint64_t temp; 
+    int k=0;   
+    //cout<<"B "<<e<<endl;
     for(int i=0; i<=count-1;i++){
-        cout<<"A[i] "<<A[i]<<endl;
+        //cout<<"carry "<<carry<<endl;
+        //cout<<"A[i] "<<A[i]<<endl;
         temp=A[i]*e+carry;
         E[i]=temp&(4294967296-1);
         carry = temp >> 32;
-        cout<<"-----------"<<endl;
+        //cout<<"E[i] "<<E[i]<<endl;
+        //cout<<"---================--------"<<endl;
+        k++;
+    }
+    //cout<<"carry "<<carry<<endl;
+    if(carry!=0)E[k]=carry;
+    //cout<<"k "<<k<<endl;
+}
 
+void long_shift_to_high(uint64_t A[], uint64_t L[], int i, int count){
+    uint64_t n = 00000000;
+    for(int j=0; j<i; j++){
+        L[j]=n;
+    }
+    for(int j=i;j<=count+i;j++){
+        L[j]=A[j-i];
     }
 }
 
 
+
 int main(){
     
-    //string a = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
-    //string b = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
-    string a = "123456789abcdef9";
-    string b = "abcdef9012345678";
-    //string a = "abcdef90";
+    string a = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
+    string b = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
+    //string a = "123456789abcdef9";
+    //string b = "abcdef9012345678";
+    //string a = "fbcdef90";
     //string b = "12345678";
+    //string a = "12345678123456781234568712345678";
+    //string b = "145afcd961278435aaacfdba12345678";
     int negative=0;
-    if(a<b){
+    //це для віднімання
+    /*if(a<b){
         swap(a,b);
         negative=1;
-    }
+    }*/
 
-    uint64_t A[64];
+    uint64_t A[64]={0};
     int count_a=0;
 
-    uint64_t B[64];
+    uint64_t B[64]={0};
     int count_b=0;
     
     hex_32(a, A, count_a);
@@ -131,10 +153,18 @@ int main(){
     //cout<<"carry "<<carry<<endl;
     //треба придумати як передбачати розмір масиву
     cout<<"add ";
-    if(carry!=0) cout<<carry;
-    for (int j = count_a-1; j >=0; j--){
-        cout << hex << C[j]<<"";
+    cout<<carry<<endl;
+    if(carry!=0){
+        for (int j = count_a; j >=0; j--){
+            cout << hex << C[j]<<"";
+        }
     }
+    else{
+        for (int j = count_a-1; j >=0; j--){
+            cout << hex << C[j]<<"";
+        }
+    }
+    
     
     cout<<endl;
    
@@ -153,17 +183,103 @@ int main(){
 
     //множення багаторозрядного на цифру 
     int e= 9;
-    int carry_m=0;
-    
-    uint64_t E[64];
-    
-    long_mul_one(A, E, carry_m, count_a, e);
+    uint64_t carry_m=0;
+    cout<<endl;
 
-    if(carry_m!=0) cout<<carry_m;
-    for (int j = count_a-1; j >=0; j--){
-        cout <<setfill('0') << setw(8)<< hex << E[j]<<"";
+    uint64_t F[64]={0};
+    uint64_t shifted[128] = {0};    // зсунуте значення
+    uint64_t E[64] ={0};
+    int count_sh=0;
+    int count_e;
+    int carry_mm;
+    for(int i=0; i<=count_a-1;i++){
+        carry_m=0;
+        carry_mm=0;
+        long_mul_one(A, E, carry_m, count_a, B[i]);
+        /*cout<<"A ";
+        for (int j = count_a-1; j >=0; j--) {
+            cout << hex << A[j];
+        }
+        cout<<endl;
+        cout<<"B[i] "<<B[i]<<endl;*/
+        if(carry_m!=0){
+            /*for (int j = count_a; j >=0; j--){
+                cout <<setfill('0') << setw(8)<< hex << E[j];
+            }
+            cout<<endl;*/
+            long_shift_to_high(E, shifted, i, count_a);
+            /*for (int j = count_a+i; j >=0; j--){
+                cout <<setfill('0') << setw(8)<< hex << shifted[j]<<"";
+            }*/
+            long_add(F, shifted, F, carry_mm, count_a+i+1);
+            /*cout<<endl;
+            cout<<"result ";
+            for (int j = count_a+i; j >=0; j--){
+                cout <<setfill('0') << setw(8)<< hex << F[j]<<"";
+            }*/
+        }
+        else{
+            /*for (int j = count_a-1; j >=0; j--){
+                cout <<setfill('0') << setw(8)<< hex << E[j];
+            }*/
+            long_shift_to_high(E, shifted, i, count_a-1);
+            /*for (int j = count_a+i-1; j >=0; j--){
+                cout <<setfill('0') << setw(8)<< hex << shifted[j]<<"";
+            }*/
+            long_add(F, shifted, F, carry_mm, count_a+i);
+            /*cout<<endl;
+            cout<<"result ";
+            for (int j = count_a+i-1; j >=0; j--){
+                cout <<setfill('0') << setw(8)<< hex << F[j]<<"";
+            }*/
+        }
+        //cout<<endl;
+        
+        //count_e=0;
+        //long_shift_to_high(E, shifted, i, count_e);
+        /*for (int j = count_a-1; j >=0; j--){
+            cout <<setfill('0') << setw(8)<< hex << shifted[j]<<"";
+        }*/
+        cout<<endl;
+        //F=F+shifted;//а тут склепати багаторозрядне додавання би, інакше воно недодасться
+        int carry_mm=0;
+        long_add(F, shifted, F, carry_mm, count_sh);
+        cout<<"-------------"<<endl;
     }
-    
+    cout<<"--------------------------------"<<endl;
+    cout<<count_sh<<endl;
+    for (int j = count_sh-1; j >=0; j--) {
+        cout << hex << F[j];
+    }
+
+    /*for(int i=0; i<=count_a-1;i++){
+        cout<<"A ";
+        for (int j = count_a-1; j >=0; j--) {
+            cout << hex << A[j];
+        }
+        cout<<endl;
+        cout<<"B[i] "<<B[i]<<endl;
+        carry_m=0;
+        long_mul_one(A, E, carry_m, count_a, B[i]);
+        if(carry_m!=0) cout<<carry_m;
+        for (int j = count_a-1; j >=0; j--){
+            cout <<setfill('0') << setw(8)<< hex << E[j]<<"";
+        }
+        cout<<endl;
+        cout<<"-------------------"<<endl;
+
+    }
+
+
+    cout<<endl;
+    /*uint64_t L[64] ={0};
+    long_shift_to_high(A, L,3,2);
+    for (int j = count_a-1+3; j >=0; j--){
+        cout <<setfill('0') << setw(8)<< hex << L[j]<<"";
+    }*/
+
+
+
     
     return 0;
 } 

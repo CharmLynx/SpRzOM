@@ -9,6 +9,8 @@
         "unordered_map": "cpp",
         "vector": "cpp",
         "format": "cpp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "compare": "cpp",
+        "cstdint": "cpp"
     }
 }
