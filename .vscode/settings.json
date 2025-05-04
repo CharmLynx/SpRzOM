@@ -11,6 +11,8 @@
         "format": "cpp",
         "iosfwd": "cpp",
         "compare": "cpp",
-        "cstdint": "cpp"
+        "cstdint": "cpp",
+        "numbers": "cpp",
+        "ostream": "cpp"
     }
 }
