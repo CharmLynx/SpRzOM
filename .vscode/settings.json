@@ -13,6 +13,7 @@
         "compare": "cpp",
         "cstdint": "cpp",
         "numbers": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "iostream": "cpp"
     }
 }

@@ -210,15 +210,19 @@ void length(uint64_t A[], int& count){
 }
 int bit_length(uint64_t A[]) {
     int count=0;
-    for(int i=0;i<64;i++){//максимальна довжина числа 2048 біт,а отже у масиву - 64
+    /*for(int i=0;i<64;i++){//максимальна довжина числа 2048 біт,а отже у масиву - 64
         if(A[i]!=0){
             count++;
         }
         else{
             return count;
         }
+    }*/
+    for (int i = 63; i >= 0; i--) {
+        if (A[i] != 0) {
+            return i + 1;
+        }
     }
-    
     return 0;
 }
 
@@ -283,16 +287,102 @@ void long_div(uint64_t A[], uint64_t B[], int count_a, int count_b, uint64_t Q[]
 
     }
 }
+int bit_length_pro(uint64_t A[]) {
+    for (int i = 63; i >= 0; i--) {
+        if (A[i] != 0) {
+            for (int j = 63; j >= 0; j--) {
+                if ((A[i] >> j) & 1) {
+                    return i * 64 + j + 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
 
+void long_power(uint64_t A[], uint64_t P[], uint64_t J[], int& count_a, int count_p){
+    string j = "1";
+    
+    int count_j=0;
+    hex_32(j, J,count_j);
+    uint64_t H[128]={0};
+    
+    uint64_t K[128]={0};
+    int count_k;
 
+    int bit_len = bit_length_pro(P);
+    for (int i = 0; i < bit_len; i++) {
+        if ((P[i / 32] >> (i % 32)) & 1) {
+            //cout<<"тут один"<<endl;
+            /*cout<<"===== J"<<endl;
+            for (int j = bit_length(J)-1; j >=0; j--){
+                cout <<setfill('0') << setw(8)<< hex << J[j]<<"";
+            }
+            cout<<"====="<<endl;*/
+            for(int i=0; i<64; i++) H[i] = 0;
+            /*cout<<"===== A"<<endl;
+            for (int j = count_a-1; j >=0; j--){
+                cout <<setfill('0') << setw(8)<< hex << A[j]<<"";
+            }
+            cout<<endl;
+            cout<<"aaaaaaaaaaaaaaa "<<count_a<<endl;*/
+            //long_mul(J, A, H, count_a);
+            long_mul(A, J, H, bit_length(A));
+            /*cout<<"hhhhhhhhhhh "<<bit_length(H)<<endl;
+            cout<<bit_length(H)<<endl;
+            cout<<"===== J=A*J"<<endl;
+            for (int j = 2*bit_length(H)-1; j >=0; j--){
+                cout <<setfill('0') << setw(8)<< hex << H[j]<<"";
+            }*/
+            for(int i=0; i<128; i++) J[i] = 0;    
+            for(int i=0; i<=2*count_a-1; i++){
+                J[i]=H[i];
+                //cout<<"є"<<endl;
+            }
+            //cout<<endl;
+            //cout<<"====="<<endl;
+        }
+        for(int i=0; i<128; i++) K[i] = 0;
+        long_mul(A, A, K, count_a);
 
+        //count_k=bit_length_pro(K);
+        count_a =2*bit_length(A);
+        count_k=count_a;
+        //count_a = count_k;
+
+        /*cout<<endl;
+        cout<<"===== A=A*A"<<endl;
+        for (int j = count_k-1; j >=0; j--){
+            cout <<setfill('0') << setw(8)<< hex << K[j]<<"";
+        }
+        //cout<<endl;
+        //cout<<bit_length_pro(K)<<endl;
+        cout<<"====="<<endl;*/
+        for(int i=0; i<64; i++) A[i] = 0;
+        //cout<<"занулили"<<endl;
+        
+        //cout<<count_k<<endl;
+        for(int i=0; i<count_k; i++){
+            A[i]=K[i];
+            //cout<<"є"<<endl;
+        }
+        count_a=count_k;
+        //cout<<"----------------------------------------"<<endl;
+    }
+    //cout<<endl;
+}
 
 int main(){
 
-    string b = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
-    string a = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
-    //string b = "123456789abcdef9";
-    //string a = "abcdef9012345678";
+    //string a ="fffffffe26019bbe3021d17424135fe8cfe865df3c00aa342bfe30aacef58e91266dce2714434c546b9932a0926496b5db81da8eaf31a899151348d12b347fa6d132f5e8db99007fbff5063f1452c4a3760f426863b4a7492a7d2214acffd25b90b635a1723e6b5e849b556d809a5d9bbcd9a72e7047b9419199327eb80b4d4af130a556f430e51723d999f39ebc9e81b48f3cf120dec7f22ef495613393a531bcc57d18f6f85f0fed5c74c84346b749a8b0f78b0715ff547c120b7a0bb76248c828042070e6b57334b29526aa11c61a33eb3cc6a1f461e08116f07767773375c5b474253f4b9291e4d2281f171644e80198cdf86cac333f394abd21c1c8fc04";
+
+    //string a = "fffffffe26019bbe3021d17424135fe8cfe865df3c00aa342bfe30aacef58e91266dce2714434c546b9932a0926496b5db81da8eaf31a899151348d12b347fa6d132f5e8db99007fbff5063f1452c4a3760f426863b4a7492a7d2214acffd25b90b635a1723e6b5e849b556d809a5d9bbcd9a72e7047b9419199327eb80b4d4af130a556f430e51723d999f39ebc9e81b48f3cf120dec7f22ef495613393a531bcc57d18f6f85f0fed5c74c84346b749a8b0f78b0715ff547c120b7a0bb76248c828042070e6b57334b29526aa11c61a33eb3cc6a1f461e08116f07767773375c5b474253f4b9291e4d2281f171644e80198cdf86cac333f394abd21c1c8fc04";
+    //string b = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";
+
+    //string b = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
+    //string a = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
+    string b = "123456789abcdef9";
+    string a = "abcdef9012345678";
     //string a = "fbcdef90";
     //string b = "12345678";
     //string a = "12345678123456781234567812345679";
@@ -401,8 +491,25 @@ int main(){
         cout <<setfill('0') << setw(8)<< hex << R[j];
     }
     cout << endl;
+    cout<<endl;
 
-   
+    //багаторозрядний степінь
+    string p = "3";
+    int count_p;
+    uint64_t P[64] = {0};
+    hex_32(p, P, count_p);
+    uint64_t J[128] ={0};
+    int count_a1 =count_a;
+    long_power(A, P, J, count_a1, count_p);
+    cout<<"a^p "<<endl;
+    
+    for (int j = bit_length(J)-1; j >= 0; j--) {
+        cout <<setfill('0') << setw(8)<< hex << J[j];
+    }
+    cout << endl;
+
+    
+
 
     return 0;
 } 
