@@ -82,12 +82,15 @@ void long_sub(uint64_t A[], uint64_t B[], uint64_t D[],int count){
             borrow=0;
             //cout<<"все норм"<<endl;
         }
+        D[i] &= 0xFFFFFFFF;
         //cout<<"borrow "<<borrow<<endl;
         //cout<<"D[i] "<<D[i]<<endl;
         //cout<<"---------------------"<<endl;
     }
 
 }
+
+
 void long_mul_one(uint64_t A[], uint64_t E[], uint64_t& carry, int count, uint64_t e){
     uint64_t temp; 
     int k=0;   
@@ -372,24 +375,236 @@ void long_power(uint64_t A[], uint64_t P[], uint64_t J[], int& count_a, int coun
     //cout<<endl;
 }
 
+void long_div2(uint64_t A[], int count) {
+    uint32_t carry = 0;
+    for (int i = count - 1; i >= 0; i--) {
+        uint32_t current = static_cast<uint32_t>(A[i]);
+        A[i] = ((current >> 1) | (static_cast<uint64_t>(carry) << 31)) & 0xFFFFFFFF;
+        carry = current & 1;
+    }
+}
+
+
+void long_mul2(uint64_t A[], int& count) {
+    uint64_t carry = 0;
+
+    for (int i = 0; i < count; ++i) {
+        uint64_t current = A[i];
+        uint64_t new_carry = (current >> 31) & 1; // старший біт поточного 32-бітового значення
+        A[i] = ((current << 1) | carry) & 0xFFFFFFFF; // зсув + перенос + маскування
+        carry = new_carry;
+    }
+
+    // якщо після останнього елементу ще є перенос — додаємо його
+    if (carry != 0) {
+        A[count] = carry;
+        count++;
+    }
+}
+void long_gcd(uint64_t A[], uint64_t B[], uint64_t D[]){
+    int count_a = bit_length(A);
+    int count_b = bit_length(B);
+    string d = "1";
+    int count_d=0;
+    hex_32(d, D, count_d);
+    uint64_t T[64] ={0};
+    while(((A[0] & 1) == 0)&&((B[0] & 1) == 0)){
+        //a=a/2;
+        count_a=bit_length(A);
+        long_div2(A, count_a);
+        /*cout<<"a/2 ";
+        for (int j = count_a-1; j >=0; j--) {
+            //cout << hex << A[j];
+            cout << setw(8) << hex << A[j];
+        }
+        cout <<endl;*/
+        //b=b/2;
+        count_b=bit_length(B);
+        long_div2(B,count_b);
+        /*cout<<"b/2 ";
+        for (int j = count_b-1; j >=0; j--) {
+            //cout << hex << A[j];
+            cout << setw(8) << hex << B[j];
+        }
+        cout <<endl;*/
+        
+        //d=d*2;
+        count_d=bit_length(D);
+        long_mul2(D, count_d);
+        /*cout<<"d*2 ";
+        for (int j = count_d-1; j >=0; j--) {
+            //cout << hex << A[j];
+            cout << setw(8) << hex << D[j];
+        }
+        cout <<endl;*/
+        
+    }
+    /*cout<<"перевірка після 1 циклу "<<endl;
+    cout<<"A ";
+    count_a=bit_length(A);
+    for (int j = count_a-1; j >=0; j--) {
+        //cout << hex << A[j];
+        cout << setw(8) << hex << A[j];
+    }
+    cout<<endl;
+    cout<<"B ";
+    count_b=bit_length(B);
+    for (int j = count_b-1; j >=0; j--) {
+        //cout << hex << A[j];
+        cout << setw(8) << hex << B[j];
+    }
+    cout<<endl;
+    cout<<"D ";
+    count_d=bit_length(D);
+    for (int j = count_d-1; j >=0; j--) {
+        //cout << hex << A[j];
+        cout << setw(8) << hex << D[j];
+    }
+    cout<<endl;
+    cout<<endl;*/
+
+
+
+    while((A[0] & 1)==0){
+        //a=a/2;
+        count_a=bit_length(A);
+        long_div2(A, count_a);
+    }
+    /*cout<<"перевірка після 2 циклу "<<endl;
+    cout<<"A ";
+    count_a=bit_length(A);
+    for (int j = count_a-1; j >=0; j--) {
+        //cout << hex << A[j];
+        cout << setw(8) << hex << A[j];
+    }
+    cout<<endl;
+    cout<<endl;*/
+
+
+    while(bit_length(B) != 0){
+        while((B[0] & 1)==0){
+            //b=b/2;
+            count_b=bit_length(B);
+            long_div2(B, count_b);
+        }
+        //(a,b)=(min{a,b}, abs(a-b))
+        count_a=bit_length(A);
+        count_b=bit_length(B);
+        if (long_compare(A, B, max( count_a, count_b)) <= 0) {
+            // A ≤ B
+            /*cout<<"A<B не міняєм"<<endl;
+            cout<<"все те ж А те якe min: ";
+            for (int j = count_a-1; j >=0; j--) {
+                //cout << hex << A[j];
+                cout << setw(8) << hex << A[j];
+            }
+            cout<<endl;*/
+            
+            count_a = bit_length(A);
+            count_b = bit_length(B);
+
+            //for(int i=0; i<64; i++) T[i] = 0;
+            long_sub(B, A, B, count_b);  // B = B - A
+            /*for (int j = bit_length(T)-1; j >=0; j--) {
+                //cout << hex << A[j];
+                //cout << setw(8) << hex << D[j];
+                B[j]=T[j];
+            }*/
+            /*cout<<"В різниця: ";
+            for (int j = count_b-1; j >=0; j--) {
+                //cout << hex << A[j];
+                cout << setw(8) << hex << B[j];
+            }
+            cout <<endl;
+            cout<<endl;*/
+            
+            count_a = bit_length(A);
+            count_b = bit_length(B);
+
+            // A залишається без змін
+        } else {
+            // A > B
+            //swap(A, B);
+            for (int i = 0; i < max(count_a, count_b); i++) {
+                uint64_t temp = A[i];
+                A[i] = B[i];
+                B[i] = temp;
+            }
+            swap(count_a, count_b);
+            /*cout<<"відбувся свап"<<endl;
+            cout<<"нове А те якe min: ";
+            for (int j = count_a-1; j >=0; j--) {
+                //cout << hex << A[j];
+                cout << setw(8) << hex << A[j];
+            }
+            cout <<endl;*/
+            count_b=bit_length(B);
+            //for(int i=0; i<64; i++) T[i] = 0;
+            long_sub(B, A, T, count_b);  // A = A - B
+            /*for (int j = bit_length(T)-1; j >=0; j--) {
+                //cout << hex << A[j];
+                //cout << setw(8) << hex << D[j];
+                B[j]=T[j];
+            }*/
+            count_b=bit_length(B);
+            /*cout<<"нове В різниця: ";
+            for (int j = count_b-1; j >=0; j--) {
+                //cout << hex << A[j];
+                cout << setw(8) << hex << B[j];
+            }*/
+        //cout <<endl;
+        //cout<<endl;
+        }
+    
+    count_a=bit_length(A);
+    count_b=bit_length(B);
+        
+
+    }
+    //cout<<"вийшло з циклу"<<endl;
+    //d=d*a;
+    /*count_d=bit_length(D);
+    cout<<"d до множення ";
+    for (int j = count_d-1; j >=0; j--) {
+        //cout << hex << A[j];
+        cout << setw(8) << hex << D[j];
+    }
+    cout<<endl;
+    cout<<"A ";
+    for (int j = count_a-1; j >=0; j--) {
+        //cout << hex << A[j];
+        cout << setw(8) << hex << A[j];
+    }
+    cout<<endl;*/
+    for(int i=0; i<64; i++) T[i] = 0;
+    long_mul(D, A, T, count_a);
+    for(int i=0; i<64; i++) D[i] = 0;
+    for (int j = bit_length(T)-1; j >=0; j--) {
+        //cout << hex << A[j];
+        //cout << setw(8) << hex << D[j];
+        D[j]=T[j];
+    }
+
+}
+
+
+
+
 int main(){
-
-    //string a ="fffffffe26019bbe3021d17424135fe8cfe865df3c00aa342bfe30aacef58e91266dce2714434c546b9932a0926496b5db81da8eaf31a899151348d12b347fa6d132f5e8db99007fbff5063f1452c4a3760f426863b4a7492a7d2214acffd25b90b635a1723e6b5e849b556d809a5d9bbcd9a72e7047b9419199327eb80b4d4af130a556f430e51723d999f39ebc9e81b48f3cf120dec7f22ef495613393a531bcc57d18f6f85f0fed5c74c84346b749a8b0f78b0715ff547c120b7a0bb76248c828042070e6b57334b29526aa11c61a33eb3cc6a1f461e08116f07767773375c5b474253f4b9291e4d2281f171644e80198cdf86cac333f394abd21c1c8fc04";
-
-    //string a = "fffffffe26019bbe3021d17424135fe8cfe865df3c00aa342bfe30aacef58e91266dce2714434c546b9932a0926496b5db81da8eaf31a899151348d12b347fa6d132f5e8db99007fbff5063f1452c4a3760f426863b4a7492a7d2214acffd25b90b635a1723e6b5e849b556d809a5d9bbcd9a72e7047b9419199327eb80b4d4af130a556f430e51723d999f39ebc9e81b48f3cf120dec7f22ef495613393a531bcc57d18f6f85f0fed5c74c84346b749a8b0f78b0715ff547c120b7a0bb76248c828042070e6b57334b29526aa11c61a33eb3cc6a1f461e08116f07767773375c5b474253f4b9291e4d2281f171644e80198cdf86cac333f394abd21c1c8fc04";
-    //string b = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";
 
     string b = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
     string a = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
     //string b = "123456789abcdef9";
     //string a = "abcdef9012345678";
+    //string b = "123";
+    //string a = "369";
     //string a = "fbcdef90";
     //string b = "12345678";
-    //string a = "12345678123456781234567812345679";
+    //string a = "12345678123456781234567812345678";
     //string b = "12345678123456781234567812345679";
     //string b = "145afcd961278435aaacfdba12345678";
-    //string a = "1";
-    //string b = "0";
+    //string a = "4";
+    //string b = "1";
     int negative=0;
     //це для віднімання
     if(a<b){
@@ -441,24 +656,24 @@ int main(){
     cout<<endl;
 
 
-    uint64_t D[64];
-    long_sub(A, B, D, count_a);
+    uint64_t S[64];
+    long_sub(A, B, S, count_a);
     cout<<"sub ";
     if(negative==1) cout<<"-";
     for (int j = count_a-1; j >=0; j--){
-        cout <<setfill('0') << setw(8)<< hex << D[j]<<"";
+        cout <<setfill('0') << setw(8)<< hex << S[j]<<"";
     }
     cout<<endl;
     cout<<endl;
     if (negative==1) swap(A, B);
 
     //множення
-    uint64_t F[128]={0};
-    long_mul(A, B, F, count_a);
+    uint64_t M[128]={0};
+    long_mul(A, B, M, count_a);
     cout<<"mull"<<endl;
 
     for (int j = 2*count_a-1; j >=0; j--){
-        cout <<setfill('0') << setw(8)<< hex << F[j]<<"";
+        cout <<setfill('0') << setw(8)<< hex << M[j]<<"";
     }
     cout<<endl;
     cout<<endl;
@@ -474,7 +689,7 @@ int main(){
     cout<<endl;
 
     //ділення
-    uint64_t R[64]={0};
+    uint64_t R[64] = {0};
     uint64_t Q[64] = {0};
     long_div(A, B, count_a, count_b, Q, R);
 
@@ -507,8 +722,44 @@ int main(){
         cout <<setfill('0') << setw(8)<< hex << J[j];
     }
     cout << endl;
+    cout<<endl;
+
+    //перезаписались тому
+    for(int i=0; i<64; i++) A[i] = 0;
+    for(int i=0; i<64; i++) B[i] = 0;
+    count_a=0;
+    count_b=0;
+    hex_32(a,A,count_a);
+    hex_32(b,B,count_b);
+    
 
     
+    //gcd
+    uint64_t D[64]={0};
+    long_gcd(A, B, D);
+    int count_d=bit_length(D);
+    cout<<"gcd ";
+    for (int j = count_d-1; j >=0; j--) {
+        //cout << hex << A[j];
+        cout << setw(8) << hex << D[j];
+    }
+    cout<<endl;
+    cout<<endl;
+    
+
+    //lcm
+    uint64_t L[64] = {0};
+    uint64_t Rl[64] = {0};
+    uint64_t Ql[64] = {0};
+    long_div(M, D,bit_length(M), count_d, Ql, Rl);
+    cout<<"lcm ";
+    for (int j = bit_length(Ql)-1; j >= 0; j--) {
+        cout <<setfill('0') << setw(8)<< hex << Ql[j];
+    }
+    
+
+    
+
 
 
     return 0;

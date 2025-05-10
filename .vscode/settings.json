@@ -14,6 +14,8 @@
         "cstdint": "cpp",
         "numbers": "cpp",
         "ostream": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "random": "cpp",
+        "chrono": "cpp"
     }
 }
