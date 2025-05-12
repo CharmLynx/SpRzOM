@@ -72,7 +72,8 @@ void long_sub(uint64_t A[], uint64_t B[], uint64_t D[],int count){
         //cout<<"A[i] "<<A[i]<<endl;
         //cout<<"B[i] "<<B[i]<<endl;
         
-        if(A[i]<=B[i]){
+        //if(A[i]<=B[i])
+        if (A[i] < B[i] + borrow){
             D[i]=(4294967296)+A[i]-B[i]-borrow;
             borrow=1;
             //cout<<"мав бути -"<<endl;
@@ -228,8 +229,19 @@ int bit_length(uint64_t A[]) {
     }
     return 0;
 }
-
-void long_div(uint64_t A[], uint64_t B[], int count_a, int count_b, uint64_t Q[], uint64_t R[]){
+int bit_length_pro(uint64_t A[]) {
+    for (int i = 63; i >= 0; i--) {
+        if (A[i] != 0) {
+            for (int j = 31; j >= 0; j--) {
+                if ((A[i] >> j) & 1) {
+                    return i * 32 + j + 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+/*void long_div(uint64_t A[], uint64_t B[], int count_a, int count_b, uint64_t Q[], uint64_t R[]){
     uint64_t H[64] = {0};
     for (int j = 0; j < count_a; j++) {
         R[j]=A[j];
@@ -251,27 +263,27 @@ void long_div(uint64_t A[], uint64_t B[], int count_a, int count_b, uint64_t Q[]
             cout <<setfill('0') << setw(8)<< hex << H[j]<<"";
         }
         cout<<endl;*/
-        if(long_compare(R, H, count_r) < 0){
+        /*if(long_compare(R, H, count_r) < 0){
             //cout<<" воно в if "<<endl;
             t=t-1;
             long_shift_to_high(B, H, t-k, count_b);
         }
-        length(R, count_r); 
-        //count_r=count_r;
-        //cout<<"count_r "<<count_r<<endl;
+        length(R, count_r);
+        /*cout<<"count_r "<<count_r<<endl;
         //R = R-H;
-        //cout<<"R ";
-        /*for (int j = count_r-1; j >=0; j--){
+        cout<<"R ";
+        for (int j = count_r-1; j >=0; j--){
             cout <<setfill('0') << setw(8)<< hex << R[j]<<"";
-        }*/
-        //cout<<endl;
-        long_sub(R, H, R, count_r);
+        }
+        cout<<endl;*/
+        /*long_sub(R, H, R, count_r);
+
         /*for (int j = count_r-1+t-k; j >=0; j--){
             cout <<setfill('0') << setw(8)<< hex << R[j]<<"";
         }
         cout<<endl;*/
         //Q=Q+2^(t-k);
-        bitpos = t - k;
+        /*bitpos = t - k;
         word_index = bitpos / 32;
         bit_index  = bitpos % 32;
         uint64_t carry_q = 1ULL << bit_index;
@@ -288,9 +300,57 @@ void long_div(uint64_t A[], uint64_t B[], int count_a, int count_b, uint64_t Q[]
         cout << endl;
         cout<<"-----------------------------"<<endl;*/
 
+    //}
+//}
+void bit_shift_to_high(uint64_t src[], uint64_t dst[], int shift_bits) {
+    for (int i = 0; i < 64; i++) dst[i] = 0;
+
+    int word_shift = shift_bits / 32;
+    int bit_shift = shift_bits % 32;
+
+    for (int i = 63; i >= 0; i--) {
+        if (i - word_shift < 0) break;
+
+        dst[i] |= (src[i - word_shift] << bit_shift) & 0xFFFFFFFF;
+
+        if (bit_shift != 0 && i - word_shift - 1 >= 0) {
+            dst[i] |= (src[i - word_shift - 1] >> (32 - bit_shift)) & 0xFFFFFFFF;
+        }
     }
 }
-int bit_length_pro(uint64_t A[]) {
+void long_div(uint64_t A[], uint64_t B[], int count_a, int count_b, uint64_t Q[], uint64_t R[]) {
+    uint64_t H[64] = {0};
+    for (int j = 0; j < count_a; j++){
+        R[j] = A[j];
+    }
+
+    int k = bit_length_pro(B);
+    int count_r = bit_length_pro(R);
+
+    while (long_compare(R, B, max(count_a, count_b)) >= 0) {
+        int t = bit_length_pro(R);
+        int bitpos = t - k;
+        if (bitpos < 0) break;
+
+        bit_shift_to_high(B, H, bitpos);
+
+        if (long_compare(R, H, 64) < 0) {
+            bitpos--;
+            if (bitpos < 0) break;
+            bit_shift_to_high(B, H, bitpos);
+            if (long_compare(R, H, 64) < 0) break;
+        }
+
+        long_sub(R, H, R, 64);
+
+        if (bitpos / 32 < 64)
+            Q[bitpos / 32] |= (1ULL << (bitpos % 32));
+
+        count_r = bit_length_pro(R);
+    }
+}
+
+int bit_length_proо(uint64_t A[]) {
     for (int i = 63; i >= 0; i--) {
         if (A[i] != 0) {
             for (int j = 63; j >= 0; j--) {
@@ -313,7 +373,7 @@ void long_power(uint64_t A[], uint64_t P[], uint64_t J[], int& count_a, int coun
     uint64_t K[128]={0};
     int count_k;
 
-    int bit_len = bit_length_pro(P);
+    int bit_len = bit_length_proо(P);
     for (int i = 0; i < bit_len; i++) {
         if ((P[i / 32] >> (i % 32)) & 1) {
             //cout<<"тут один"<<endl;
@@ -348,7 +408,7 @@ void long_power(uint64_t A[], uint64_t P[], uint64_t J[], int& count_a, int coun
         for(int i=0; i<128; i++) K[i] = 0;
         long_mul(A, A, K, count_a);
 
-        //count_k=bit_length_pro(K);
+        //count_k=bit_length_proо(K);
         count_a =2*bit_length(A);
         count_k=count_a;
         //count_a = count_k;
@@ -359,7 +419,7 @@ void long_power(uint64_t A[], uint64_t P[], uint64_t J[], int& count_a, int coun
             cout <<setfill('0') << setw(8)<< hex << K[j]<<"";
         }
         //cout<<endl;
-        //cout<<bit_length_pro(K)<<endl;
+        //cout<<bit_length_proо(K)<<endl;
         cout<<"====="<<endl;*/
         for(int i=0; i<64; i++) A[i] = 0;
         //cout<<"занулили"<<endl;
@@ -586,23 +646,129 @@ void long_gcd(uint64_t A[], uint64_t B[], uint64_t D[]){
     }
 
 }
+void long_lcm(uint64_t M[], uint64_t D[], uint64_t Q[]){
+    uint64_t R[64] = {0};
+    int count_m=bit_length(M);
+    int count_d=bit_length(D);
+    long_div(M, D,count_m, count_d, Q, R);
+}
+
+void kill_last_digits(uint64_t src[], int src_len, int digits_to_kill, uint64_t dest[]) {
+    int j = 0;
+    for (int i = digits_to_kill; i < src_len; i++) {
+        dest[j++] = src[i];
+    }
+    while (j < 64) {
+        dest[j++] = 0;
+    }
+}
+
+void compute_mu(uint64_t n[], int count_n, uint64_t mu[], int& count_mu) {
+    uint64_t beta2k[64] = {0};
+    beta2k[2 * count_n] = 1; // β^{2k} — один біт у 2k-му слові
+
+    uint64_t rem[64] = {0};
+    long_div(beta2k, n, 2 * count_n + 1, count_n, mu, rem);
+
+    count_mu = bit_length_pro(mu);  // точна кількість бітів у μ
+}
+void barret_reduction(uint64_t A[], uint64_t N[], uint64_t r[], uint64_t MU[]){
+    uint64_t q1[64]={0};
+    uint64_t q2[64]={0};
+    uint64_t q3[64]={0};
+    uint64_t qn[64]={0};
+    int count_a =bit_length(A);
+    int count_n = bit_length(N);
+    kill_last_digits(A,count_a, count_n-1, q1);
+    long_mul(q1, MU, q2, bit_length(q1));
+    kill_last_digits(q2,bit_length(q2), count_n+1, q3);
+    
+    long_mul(q3, N, qn, bit_length(q3));
+    long_sub(A, qn, r, count_a);
+    while(long_compare(r, N, max(bit_length(r), count_n))>=0){
+        long_sub(r, N,r,bit_length(r));
+    }
+}
+void long_mod_add(uint64_t A[], uint64_t B[], uint64_t N[], uint64_t MU[], uint64_t R[]) {
+    uint64_t tmp[64] = {0};
+    int carry = 0;
+    long_add(A, B, tmp, carry, max(bit_length(A), bit_length(B)));
+    barret_reduction(tmp, N, R, MU);
+}
+void long_mod_sub(uint64_t A[], uint64_t B[], uint64_t N[], uint64_t MU[], uint64_t R[], int negative) {
+    uint64_t tmp[64] = {0};
+    long_sub(A, B, tmp, max(bit_length(A), bit_length(B)));
+    if(negative==1){    
+        barret_reduction(tmp, N, R, MU);
+        long_sub(N, R, R, bit_length(N));
+    }
+    else{
+        barret_reduction(tmp, N, R, MU);
+    }
+}
+
+void long_mod_mul(uint64_t A[], uint64_t B[], uint64_t N[], uint64_t MU[], uint64_t R[]) {
+    uint64_t A_mod[64] = {0};
+    uint64_t B_mod[64] = {0};
+    uint64_t product[64] = {0};
+
+    
+    barret_reduction(A, N, A_mod, MU);
+    barret_reduction(B, N, B_mod, MU);
+    if((bit_length(A_mod)==0)||(bit_length(A_mod)==0)){
+        cout<<"0"<<endl;
+    }
+    else{
+        int count = max(bit_length(A_mod), bit_length(B_mod));
+        long_mul(A_mod, B_mod, product, count );
+        barret_reduction(product, N, R, MU);
+        
+    }
+}
+void long_mod_pow(uint64_t A[], uint64_t E[], uint64_t N[], uint64_t MU[], uint64_t R[]) {
+    uint64_t base[64] = {0};
+    uint64_t result[64] = {0};
+    uint64_t tmp[64] = {0};
+
+    // result = 1
+    result[0] = 1;
+
+    // base = A mod N
+    barret_reduction(A, N, base, MU);
+
+    int bitlen = bit_length_pro(E);
+
+    for (int i = 0; i < bitlen; i++) {
+        if ((E[i / 32] >> (i % 32)) & 1) {
+            // result = (result * base) mod N
+            long_mod_mul(result, base, N, MU, tmp);
+            for (int j = 0; j < 64; j++) result[j] = tmp[j];
+        }
+
+        // base = (base * base) mod N
+        long_mod_mul(base, base, N, MU, tmp);
+        for (int j = 0; j < 64; j++) base[j] = tmp[j];
+    }
+
+    for (int j = 0; j < 64; j++) R[j] = result[j];
+}
 
 
 
 
 int main(){
 
-    string b = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
-    string a = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
+    //string b = "12345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF9012345ABCDEF90123452222";
+    //string a = "ffffffff1300cddeaa5d2750e2fabe17bc2289f575609de72dbd34d03ad2be472abec4f8cdb6653a8459867f72ff4840e9de7e9e3b8a08ce0427d24f14acf4f2ef1ace93e8b3ee9ec59f508c4e919a8a2e5cd550df1e31b387c67397f36423795907cc0c8a38f46c26979782030a9b5475db2902fac12161cc1ae853d68e00fe";   
     //string b = "123456789abcdef9";
     //string a = "abcdef9012345678";
     //string b = "123";
     //string a = "369";
     //string a = "fbcdef90";
     //string b = "12345678";
-    //string a = "12345678123456781234567812345678";
+    string a = "12345678123456781234567812345699";
     //string b = "12345678123456781234567812345679";
-    //string b = "145afcd961278435aaacfdba12345678";
+    string b = "145afcd961278435aaacfdba12345678";
     //string a = "4";
     //string b = "1";
     int negative=0;
@@ -747,20 +913,114 @@ int main(){
     cout<<endl;
     
 
+    //перезаписались тому
+    for(int i=0; i<64; i++) A[i] = 0;
+    for(int i=0; i<64; i++) B[i] = 0;
+    count_a=0;
+    count_b=0;
+    hex_32(a,A,count_a);
+    hex_32(b,B,count_b);
+
     //lcm
-    uint64_t L[64] = {0};
-    uint64_t Rl[64] = {0};
     uint64_t Ql[64] = {0};
-    long_div(M, D,bit_length(M), count_d, Ql, Rl);
+    long_lcm(M, D, Ql);
     cout<<"lcm ";
     for (int j = bit_length(Ql)-1; j >= 0; j--) {
         cout <<setfill('0') << setw(8)<< hex << Ql[j];
     }
-    
+    cout<<endl;
+    cout<<endl;
+
+    //перезаписались тому
+    for(int i=0; i<64; i++) A[i] = 0;
+    for(int i=0; i<64; i++) B[i] = 0;
+    count_a=0;
+    count_b=0;
+    hex_32(a,A,count_a);
+    hex_32(b,B,count_b);
 
     
+    
+    //мю
+    string n = "1234567812345678";
+    uint64_t N[64] = {0};      
+    int count_n=0;
+    hex_32(n, N, count_n);
+    uint64_t MU[128] = {0};            
+    int count_mu = 0;
+    compute_mu(N, count_n, MU, count_mu);
 
 
+    //barret reduction
+    /*
+    uint64_t r[64]={0};
+    barret_reduction(A, N, r, MU);
+
+
+    cout<<"r "<<bit_length(r)<<endl;
+    for (int j = bit_length(r)-1; j >= 0; j--) {
+        cout <<setfill('0') << setw(8)<< hex << r[j];
+    }
+    cout<<endl;
+    */
+
+
+    //+ mod
+    uint64_t r[64]={0};
+    long_mod_add(A, B, N, MU, r);
+    cout<<"(a+b) mod n "<<endl;
+    for (int j = bit_length(r)-1; j >= 0; j--) {
+        cout <<setfill('0') << setw(8)<< hex << r[j];
+    }
+    cout<<endl;
+    cout<<endl;
+    for(int i=0; i<64; i++) r[i] = 0;
+
+    //-mod
+    if(a<b){
+        swap(a,b);
+        negative=1;
+    }
+    long_mod_sub(A, B, N, MU, r, negative);
+    if (negative==1){
+        swap(A, B);
+        swap(count_a, count_b);
+    }
+    cout<<"(a-b) mod n "<<endl;
+    for (int j = bit_length(r)-1; j >= 0; j--) {
+        cout <<setfill('0') << setw(8)<< hex << r[j];
+    }
+    cout<<endl;
+    cout<<endl;
+    for(int i=0; i<64; i++) r[i] = 0;
+
+    //*mod
+    cout<<"(a*b) mod n "<<endl;
+    long_mod_mul(A, B, N, MU, r);
+    for (int j = bit_length(r)-1; j >= 0; j--) {
+        cout <<setfill('0') << setw(8)<< hex << r[j];
+    }
+    cout<<endl;
+    cout<<endl;
+    for(int i=0; i<64; i++) r[i] = 0;
+
+    //^2mod
+    cout<<"(a*a) mod n "<<endl;
+    long_mod_mul(A, A, N, MU, r);
+    for (int j = bit_length(r)-1; j >= 0; j--) {
+        cout <<setfill('0') << setw(8)<< hex << r[j];
+    }
+    cout<<endl;
+    cout<<endl;
+    for(int i=0; i<64; i++) r[i] = 0;
+
+    //^n mod
+    long_mod_pow(A, P, N, MU, r);
+    cout<<"(a^b) mod n "<<endl;
+    for (int j = bit_length(r)-1; j >= 0; j--) {
+        cout <<setfill('0') << setw(8)<< hex << r[j];
+    }
+    cout<<endl;
 
     return 0;
 } 
