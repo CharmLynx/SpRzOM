@@ -725,10 +725,10 @@ void long_mod_mul(uint64_t A[], uint64_t B[], uint64_t N[], uint64_t MU[], uint6
         
     }
 }
-void long_mod_pow(uint64_t A[], uint64_t E[], uint64_t N[], uint64_t MU[], uint64_t R[]) {
-    uint64_t base[64] = {0};
-    uint64_t result[64] = {0};
-    uint64_t tmp[64] = {0};
+/*void long_mod_pow(uint64_t A[], uint64_t E[], uint64_t N[], uint64_t MU[], uint64_t R[]) {
+    uint64_t base[1024] = {0};
+    uint64_t result[1024] = {0};
+    uint64_t tmp[1024] = {0};
 
     // result = 1
     result[0] = 1;
@@ -736,7 +736,8 @@ void long_mod_pow(uint64_t A[], uint64_t E[], uint64_t N[], uint64_t MU[], uint6
     // base = A mod N
     barret_reduction(A, N, base, MU);
 
-    int bitlen = bit_length_pro(E);
+    uint64_t bitlen = bit_length_pro(E);
+    uint64_t len_tmp = 0;
 
     for (int i = 0; i < bitlen; i++) {
         if ((E[i / 32] >> (i % 32)) & 1) {
@@ -747,11 +748,64 @@ void long_mod_pow(uint64_t A[], uint64_t E[], uint64_t N[], uint64_t MU[], uint6
 
         // base = (base * base) mod N
         long_mod_mul(base, base, N, MU, tmp);
-        for (int j = 0; j < 64; j++) base[j] = tmp[j];
+        len_tmp = bit_length(tmp);
+        for (int j = 0; j < len_tmp; j++) base[j] = tmp[j];
     }
 
     for (int j = 0; j < 64; j++) R[j] = result[j];
 }
+*/
+void long_mod_pow(uint64_t A[], uint64_t B[], uint64_t N[], uint64_t R[]) {
+    // 1. Ініціалізація C := 1
+    string one = "1";
+    uint64_t C[64] = {0};
+    int count_c = 0;
+    hex_32(one, C, count_c);
+
+    // 2. Обчислити μ = β^(2k) / N
+    int count_n = 0;
+    length(N, count_n);
+
+    uint64_t MU[64] = {0};
+    compute_mu(N, count_n, MU, count_n);  // MU := floor(β^(2k) / N)
+
+    // 3. Копія основи
+    uint64_t A_mod[64] = {0};
+    barret_reduction(A, N, A_mod, MU);
+
+    // 4. Копія показника
+    int bit_len = bit_length_proо(B);
+
+    // 5. Основний цикл
+    for (int i = 0; i < bit_len; i++) {
+        if ((B[i / 32] >> (i % 32)) & 1) {
+            // C := BarrettReduction(C * A, N, μ)
+            uint64_t temp_mul[128] = {0};
+            int count_c_now = 0, count_a_now = 0;
+            length(C, count_c_now);
+            length(A_mod, count_a_now);
+            long_mul(C, A_mod, temp_mul, std::max(count_c_now, count_a_now));
+            barret_reduction(temp_mul, N, C, MU);
+        }
+
+        // A := BarrettReduction(A * A, N, μ)
+        uint64_t temp_square[128] = {0};
+        int count_a_now = 0;
+        length(A_mod, count_a_now);
+        long_mul(A_mod, A_mod, temp_square, count_a_now);
+        barret_reduction(temp_square, N, A_mod, MU);
+    }
+
+    // 6. Результат
+    for (int i = 0; i < 64; i++) R[i] = C[i];
+}
+
+
+
+    
+
+
+
 
 
 
@@ -1014,8 +1068,16 @@ int main(){
     cout<<endl;
     for(int i=0; i<64; i++) r[i] = 0;
 
+    //перезаписались тому
+    for(int i=0; i<64; i++) A[i] = 0;
+    for(int i=0; i<64; i++) B[i] = 0;
+    count_a=0;
+    count_b=0;
+    hex_32(a,A,count_a);
+    hex_32(b,B,count_b);
+
     //^n mod
-    long_mod_pow(A, P, N, MU, r);
+    long_mod_pow(A, B, N, r);
     cout<<"(a^b) mod n "<<endl;
     for (int j = bit_length(r)-1; j >= 0; j--) {
         cout <<setfill('0') << setw(8)<< hex << r[j];

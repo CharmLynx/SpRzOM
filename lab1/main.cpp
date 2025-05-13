@@ -18,11 +18,13 @@ int main(){
     //string a = "369";
     //string a = "fbcdef90";
     //string b = "12345678";
-    string a = "12345678123456781234567812345699";
+    //string a = "12345678123456781234567812345699";
     //string b = "12345678123456781234567812345679";
-    string b = "145afcd961278435aaacfdba12345678";
+    //string b = "145afcd961278435aaacfdba12345678";
     //string a = "4";
     //string b = "1";
+    string a ="22db0e8ffda60911f0dc9b498b1ff7d3bada705c0006639ecf399987ed982b9c3d3c35ca8fe12ce207c2f2a8b0a926a151f4fe2d5b086159000be263714ad84d3b927071ee6dc7241921dddb1ea0c3e97c2a87fe72a0f7c5e1a9d63352630fd6503877dd25d7e925d56390cce265982d663d4116e6549cea4d9a5892b1ed093a";
+    string b = "1db4de4688e9d4e3629c0dc4ccf03cdabc5f1399667b1fe21566b12aa0906bd7fb3f1aec02c0e509951e66c2658d6a5011c3985113174fe4720e3b5ffc9185d9bd596ff80f0b922a955cf81e4a3a81978f2b6ce394fb3b7cb4f738e31b7aced8f1f352740da93208907a7d9902246d5b9e74d24fb165d53e889d80cb78130d73";
 
     int negative=0;
     //це для віднімання
@@ -171,7 +173,11 @@ int main(){
     
     //gcd
     uint64_t D[64]={0};
+    start = high_resolution_clock::now();
     m_bit::long_gcd(A, B, D);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання long_gcd: " << duration.count() << " мкс" << endl;
     int count_d=m_bit::bit_length(D);
     cout<<"gcd ";
     for (int j = count_d-1; j >=0; j--) {
@@ -189,7 +195,11 @@ int main(){
 
     //lcm
     uint64_t Ql[64] = {0};
+    start = high_resolution_clock::now();
     m_bit::long_lcm(M, D, Ql);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання long_lcm: " << duration.count() << " мкс" << endl;
     cout<<"lcm ";
     for (int j = m_bit::bit_length(Ql)-1; j >= 0; j--) {
         cout <<setfill('0') << setw(8)<< hex << Ql[j];
@@ -207,17 +217,27 @@ int main(){
     
     //barret reduction
     //мю
-    string n = "1234567812345678";
+    //string n = "1234567812345678";
+    string n = "6c4d85eca23bafeba8e4eb3d6319df32dcf5a929839d965e79164f19e38847f09021cdcdcf952f1a89c344ebc637362d1d7cf4c870c32275d0c4ed10fd3a376d616b019e037a05fd22ea31262beb2c85126fdb6ca3b56fab0de535497c7334e2feeb170db6724a469763bb4ff79a45f91e8cd11e9646c11e5833e3550298c701";
     uint64_t N[64] = {0};      
     int count_n=0;
     m_bit::hex_32(n, N, count_n);
     uint64_t MU[128] = {0};            
     int count_mu = 0;
+    start = high_resolution_clock::now();
     m_bit::compute_mu(N, count_n, MU, count_mu);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання compute_mu: " << duration.count() << " мкс" << endl;
+    
 
     //+ mod
     uint64_t r[64]={0};
+    start = high_resolution_clock::now();
     m_bit::long_mod_add(A, B, N, MU, r);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання long_mod_add: " << duration.count() << " мкс" << endl;
     cout<<"(a+b) mod n "<<endl;
     for (int j = m_bit::bit_length(r)-1; j >= 0; j--) {
         cout <<setfill('0') << setw(8)<< hex << r[j];
@@ -231,7 +251,11 @@ int main(){
         swap(a,b);
         negative=1;
     }
+    start = high_resolution_clock::now();
     m_bit::long_mod_sub(A, B, N, MU, r, negative);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання long_mod_sub: " << duration.count() << " мкс" << endl;
     if (negative==1){
         swap(A, B);
         swap(count_a, count_b);
@@ -246,7 +270,11 @@ int main(){
 
     //* mod
     cout<<"(a*b) mod n "<<endl;
+    start = high_resolution_clock::now();
     m_bit::long_mod_mul(A, B, N, MU, r);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання long_mod_mul: " << duration.count() << " мкс" << endl;
     for (int j = m_bit::bit_length(r)-1; j >= 0; j--) {
         cout <<setfill('0') << setw(8)<< hex << r[j];
     }
@@ -256,7 +284,11 @@ int main(){
 
     //^2 mod
     cout<<"(a*a) mod n "<<endl;
+    start = high_resolution_clock::now();
     m_bit::long_mod_mul(A, A, N, MU, r);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання long_mod_mul для квадрату: " << duration.count() << " мкс" << endl;
     for (int j = m_bit::bit_length(r)-1; j >= 0; j--) {
         cout <<setfill('0') << setw(8)<< hex << r[j];
     }
@@ -264,8 +296,19 @@ int main(){
     cout<<endl;
     for(int i=0; i<64; i++) r[i] = 0;
 
+    for(int i=0; i<64; i++) A[i] = 0;
+    for(int i=0; i<64; i++) B[i] = 0;
+    count_a=0;
+    count_b=0;
+    m_bit::hex_32(a,A,count_a);
+    m_bit::hex_32(b,B,count_b);
+
     //^n mod
-    m_bit::long_mod_pow(A, P, N, MU, r);
+    start = high_resolution_clock::now();
+    m_bit::long_mod_pow(A, B, N, MU, r);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання long_mod_pow: " << duration.count() << " мкс" << endl;
     cout<<"(a^b) mod n "<<endl;
     for (int j = m_bit::bit_length(r)-1; j >= 0; j--) {
         cout <<setfill('0') << setw(8)<< hex << r[j];
