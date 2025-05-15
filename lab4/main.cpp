@@ -1,5 +1,9 @@
 #include <iostream>
 #include "FieldElement.h"
+#include <chrono>
+
+using namespace std;
+using namespace std::chrono;
 
 int main(){
 
@@ -15,33 +19,75 @@ int main(){
 
     //додавання
     FieldElement::Element C = {0};
+
+    auto start = high_resolution_clock::now();
     FieldElement::add(A, B, C);
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання +: " << duration.count() << " мкс" << endl;
+
     cout << "A + B = " << FieldElement::to_string(C) << "\n";
+
 
     //множення
     FieldElement::Element D = {0};
     bool Lambda[FieldElement::M][FieldElement::M] = {};
+
+    start = high_resolution_clock::now();
     FieldElement::build_lambda_matrix(Lambda);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час побудови лямбди: " << duration.count() << " мкс" << endl;
+
+    start = high_resolution_clock::now();
     FieldElement::multiply(A, B, D, Lambda);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання * " << duration.count() << " мкс" << endl;
+
     cout << "A * B = " << FieldElement::to_string(D) << "\n";
+
 
     //квадрат
     FieldElement::Element A_squared = {0};
+
+    start = high_resolution_clock::now();
     FieldElement::square(A, A_squared);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання ^2 " << duration.count() << " мкс" << endl;
+
     cout << "A^2 = " << FieldElement::to_string(A_squared) << "\n";
+
 
     //степінь n
     FieldElement::Element AN = {0};
+
+    start = high_resolution_clock::now();
     FieldElement::power(A, N, AN, Lambda);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання ^n " << duration.count() << " мкс" << endl;
+
     cout << "A^n = " << FieldElement::to_string(AN) << "\n";
 
     //обернений
     FieldElement::Element A_inv = {0};
+    start = high_resolution_clock::now();
     FieldElement::inverse(A, A_inv, Lambda);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання ^(-1) " << duration.count() << " мкс" << endl;
+
     cout << "A^(-1) = " << FieldElement::to_string(A_inv) << "\n";
 
     //слід
+    start = high_resolution_clock::now();
     uint8_t Tr = FieldElement::trace(A);
+    end = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Час виконання Tr " << duration.count() << " мкс" << endl;
+
     cout << "Tr(A) = " << (int)Tr << "\n";
 
     return 0;
